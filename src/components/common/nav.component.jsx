@@ -41,25 +41,25 @@ const NavBar = ({ setCart }) => {
 
             <ul className="navbar-nav flex-row">
               <li className="nav-item ml-lg-n4">
-                <a className="nav-link" href="./account-orders.html">
+                <Link className="nav-link" to="/accounts/orders">
                   <User size={16} />
-                </a>
+                </Link>
               </li>
               <li className="nav-item ml-lg-n4">
-                <a className="nav-link" href="/">
+                <Link className="nav-link" to="/">
                   <Heart size={16} />
-                </a>
+                </Link>
               </li>
               <li className="nav-item ml-lg-n4">
-                <a
+                <Link
                   onClick={setCart}
                   className="nav-link"
-                  href="#modalShoppingCart"
+                  to="#modalShoppingCart"
                 >
                   <span data-cart-items="2">
                     <ShoppingBag size={16} />
                   </span>
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

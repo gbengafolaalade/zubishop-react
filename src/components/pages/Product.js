@@ -4,12 +4,10 @@ import ProductDetails from "../common/product/product-details.component";
 import ProductDescription from "../common/product/description.component";
 import RelatedProduct from "../common/product/related.component";
 import ProductReview from "../common/product/product-review.component";
-import Nav from "../common/nav.component";
 
 const Product = (props) => {
   return (
     <>
-      <Nav {...props} />
       <section className="mt-5">
         <div className="container">
           <div className="row">
