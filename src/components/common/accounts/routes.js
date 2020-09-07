@@ -4,12 +4,13 @@ import Address from "./address.component";
 import WishList from "./wishlist.component";
 import PersonalInfo from "./personal-info.component";
 
+// @TODO: Fix page reload issue
 const Routes = [
   { exact: true, path: "/accounts/orders", main: Orders },
   { path: "/accounts/orders/:id", main: Order },
-  { path: "/accounts/address", main: Address },
-  { path: "/accounts/wishlist", main: WishList },
-  { path: "/accounts/personal-info", main: PersonalInfo },
+  { exact: true, path: "/accounts/address", main: Address },
+  { exact: true, path: "/accounts/wishlist", main: WishList },
+  { exact: true, path: "/accounts/personal-info", main: PersonalInfo },
 ];
 
 export default Routes;

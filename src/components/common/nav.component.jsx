@@ -1,9 +1,20 @@
-import React from "react";
+import React, { useContext } from "react";
 import { User, ShoppingBag, Heart } from "react-feather";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Logo from "../../assets/images/logo.png";
+import { AppContext } from "../../services/appstate.service";
 
-const NavBar = ({ setCart }) => {
+const NavBar = ({ setCart, setLogin }) => {
+  const { user } = useContext(AppContext);
+  let history = useHistory();
+
+  const routeToAccounts = () => {
+    if (Object.keys(user).length !== 0) {
+      return history.push("/accounts/orders");
+    }
+    return setLogin(true);
+  };
+
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom">
@@ -41,12 +52,20 @@ const NavBar = ({ setCart }) => {
 
             <ul className="navbar-nav flex-row">
               <li className="nav-item ml-lg-n4">
-                <Link className="nav-link" to="/accounts/orders">
-                  <User size={16} />
+                <Link className="nav-link" to="#" onClick={routeToAccounts}>
+                  {Object.keys(user).length !== 0 ? (
+                    <div className="avatar avatar-sm">
+                      <span className="avatar-title rounded-circle">
+                        <User size={16} />
+                      </span>
+                    </div>
+                  ) : (
+                    <User size={16} />
+                  )}
                 </Link>
               </li>
               <li className="nav-item ml-lg-n4">
-                <Link className="nav-link" to="/">
+                <Link className="nav-link" to="#" onClick={routeToAccounts}>
                   <Heart size={16} />
                 </Link>
               </li>

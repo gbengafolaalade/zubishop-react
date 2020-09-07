@@ -1,5 +1,6 @@
 import React from "react";
 import { ThumbsUp, ThumbsDown } from "react-feather";
+import { Link } from "react-router-dom";
 
 const ReviewCard = () => {
   return (
@@ -58,33 +59,33 @@ const ReviewCard = () => {
                 </div>
                 <div className="col-auto mr-auto">
                   <div className="rate">
-                    <a
+                    <Link
                       className="rate-item"
                       data-toggle="vote"
                       data-count="3"
-                      href="#"
+                      to="#"
                       role="button"
                     >
                       <ThumbsUp size={16} className="mx-2" />
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                       className="rate-item"
                       data-toggle="vote"
                       data-count="0"
-                      href="#"
+                      to="#"
                       role="button"
                     >
                       <ThumbsDown size={16} className="mx-2" />
-                    </a>
+                    </Link>
                   </div>
                 </div>
                 <div className="col-auto d-none d-lg-block">
                   <p className="mb-0 font-size-sm">Comments (0)</p>
                 </div>
                 <div className="col-auto">
-                  <a className="btn btn-xs btn-outline-border" href="#!">
+                  <Link className="btn btn-xs btn-outline-border" to="#!">
                     Comment
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
