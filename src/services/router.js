@@ -111,8 +111,12 @@ const AppNavigator = (props) => {
               />
             )}
           />
-          <Route path="/product/:id" component={() => <Product {...props} />} />
-          <Route path="/accounts/orders" component={Accounts} />
+          <Route
+            exact
+            path="/product/:id"
+            component={() => <Product {...props} />}
+          />
+          <Route exact path="/accounts/orders" component={Accounts} />
           <Route exact path="/shop/admin" component={AdminLogin} />
           <Route
             exact
