@@ -11,27 +11,30 @@ import {
   Upload,
   Select,
   Spin,
+  Card,
 } from "antd";
 import {
   MinusCircleOutlined,
   PlusOutlined,
   InboxOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
+import useFileUpload from "../../services/upload.hook";
 
-const layout = {
-  labelCol: {
-    span: 8,
-  },
-  wrapperCol: {
-    span: 16,
-  },
-};
-const tailLayout = {
-  wrapperCol: {
-    offset: 8,
-    span: 16,
-  },
-};
+// const layout = {
+//   labelCol: {
+//     span: 8,
+//   },
+//   wrapperCol: {
+//     span: 16,
+//   },
+// };
+// const tailLayout = {
+//   wrapperCol: {
+//     offset: 8,
+//     span: 16,
+//   },
+// };
 
 const AdvancePriceForm = ({ visible, onCreate, onCancel }) => {
   const [form] = Form.useForm();
@@ -39,6 +42,7 @@ const AdvancePriceForm = ({ visible, onCreate, onCancel }) => {
   const onChange = (value) => {
     console.log("changed", value);
   };
+
   return (
     <>
       <Modal
@@ -62,7 +66,7 @@ const AdvancePriceForm = ({ visible, onCreate, onCancel }) => {
         <Form form={form} name="advancePriceForm">
           <Form.Item label="Discount Percentage" name="discountPercentage">
             <InputNumber
-              defaultValue={10}
+              defaultValue={0}
               min={0}
               max={100}
               formatter={(value) => `${value}%`}
@@ -76,7 +80,7 @@ const AdvancePriceForm = ({ visible, onCreate, onCancel }) => {
               formatter={(value) =>
                 `\u00A2 ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
               }
-              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              parser={(value) => value.replace(/\u00A2\s?|(,*)/g, "")}
               onChange={onChange}
             />
           </Form.Item>
@@ -93,6 +97,9 @@ const AddProductForm = () => {
     loading: false,
     value: [],
   });
+  const [nameProduct, setProduct] = useState("");
+  const [advPrice, setAdvPrice] = useState(null);
+  const { onUploadChange, filesUrl } = useFileUpload();
   // TODO: delete or change it this variable
   // it is just for test purpose
   let lastFetchId = 0;
@@ -101,7 +108,19 @@ const AddProductForm = () => {
 
   const onCreate = (values) => {
     console.log("Received values of form: ", values);
+    const { discountPercentage, promoPrice } = values;
+    setAdvPrice({ discountPercentage, promoPrice });
     setVisible(false);
+  };
+
+  const onChange = (value) => {
+    console.log("changed", value);
+  };
+
+  const handleImageChange = ({ fileList }) => {
+    console.log(fileList);
+
+    onUploadChange(fileList, nameProduct);
   };
 
   const normFile = (e) => {
@@ -147,6 +166,18 @@ const AddProductForm = () => {
     console.log(`selected ${value}`);
   };
 
+  const dummyRequest = ({ file, onSuccess }) => {
+    setTimeout(() => {
+      onSuccess("ok");
+    }, 0);
+  };
+
+  const onSubmit = (values) => {
+    values.images = filesUrl;
+    if (advPrice) values.advPrice = advPrice;
+    console.log("Success:", values);
+  };
+
   const { loading, data, value } = relatedInputState;
 
   return (
@@ -158,24 +189,33 @@ const AddProductForm = () => {
         }}
         onCreate={onCreate}
       />
-      <Form name="basic" layout={layout}>
+      <Form name="basic" onFinish={onSubmit}>
         <div>Product Name</div>
         <Item
           name="productName"
-          rules={[{ required: true, message: "Please input your username!" }]}
+          rules={[{ required: true, message: "Please input product name" }]}
         >
-          <Input />
+          <Input
+            value={nameProduct}
+            onChange={(e) => setProduct(e.target.value)}
+          />
         </Item>
         <div>Product Price</div>
         <Row gutter={8}>
           <Col span={12}>
             <Item
               name="productPrice"
-              rules={[
-                { required: true, message: "Please input your username!" },
-              ]}
+              rules={[{ required: true, message: "Please input price!" }]}
             >
-              <Input />
+              <InputNumber
+                style={{ width: "100%" }}
+                defaultValue={0}
+                formatter={(value) =>
+                  `\u00A2 ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\u00A2\s?|(,*)/g, "")}
+                onChange={onChange}
+              />
             </Item>
           </Col>
           <Col>
@@ -189,39 +229,101 @@ const AddProductForm = () => {
           </Col>
         </Row>
         <div>Variation:</div>
-        <List name="variation">
+
+        <List name="productVariation">
           {(fields, { add, remove }) => {
             return (
               <>
                 {fields.map((field) => (
-                  <Space
-                    key={field.key}
-                    style={{ display: "flex", marginBottom: 8 }}
-                    align="start"
-                  >
-                    <Form.Item
-                      {...field}
-                      name={[field.name, "variationName"]}
-                      fieldKey={[field.fieldKey, "variationName"]}
+                  <>
+                    <Card
+                      key={field.key}
+                      extra={
+                        <MinusCircleOutlined
+                          onClick={() => {
+                            remove(field.name);
+                          }}
+                        />
+                      }
+                      style={{ marginBottom: 10 }}
                     >
-                      <Input placeholder="Variation Name" />
-                    </Form.Item>
-                    <Form.Item
-                      {...field}
-                      name={[field.name, "quantity"]}
-                      fieldKey={[field.fieldKey, "quantity"]}
-                    >
-                      <Input placeholder="Quantity" />
-                    </Form.Item>
+                      <Form.Item
+                        {...field}
+                        name={[field.name, "attrName"]}
+                        fieldKey={[field.fieldKey, "attrName"]}
+                      >
+                        <Input placeholder="Attribute Name" />
+                      </Form.Item>
 
-                    <MinusCircleOutlined
-                      onClick={() => {
-                        remove(field.name);
-                      }}
-                    />
-                  </Space>
+                      <List
+                        name={[field.name, "variation"]}
+                        key={[field.fieldKey, "variation"]}
+                      >
+                        {(field, { add, remove }) => {
+                          return (
+                            <div>
+                              {field.map((field) => (
+                                <Space
+                                  key={field.key}
+                                  style={{ display: "flex", marginBottom: 5 }}
+                                  align="start"
+                                >
+                                  <Form.Item
+                                    {...field}
+                                    name={[field.name, "name"]}
+                                    fieldKey={[field.fieldKey, "name"]}
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "Missing name",
+                                      },
+                                    ]}
+                                  >
+                                    <Input placeholder="Variation name" />
+                                  </Form.Item>
+
+                                  <Form.Item
+                                    {...field}
+                                    name={[field.name, "quantity"]}
+                                    fieldKey={[field.fieldKey, "quantity"]}
+                                    rules={[
+                                      {
+                                        required: true,
+                                        message: "Missing quantity",
+                                      },
+                                    ]}
+                                  >
+                                    <Input placeholder="Quantity" />
+                                  </Form.Item>
+
+                                  <MinusCircleOutlined
+                                    onClick={() => {
+                                      remove(field.name);
+                                    }}
+                                  />
+                                </Space>
+                              ))}
+
+                              <Form.Item>
+                                <Button
+                                  type="dashed"
+                                  onClick={() => {
+                                    add();
+                                  }}
+                                  block
+                                >
+                                  <PlusOutlined /> Add field
+                                </Button>
+                              </Form.Item>
+                            </div>
+                          );
+                        }}
+                      </List>
+                    </Card>
+                  </>
                 ))}
-                <Item>
+
+                <Form.Item>
                   <Button
                     type="dashed"
                     onClick={() => {
@@ -229,13 +331,14 @@ const AddProductForm = () => {
                     }}
                     block
                   >
-                    <PlusOutlined /> Add field
+                    <PlusOutlined /> Add attribute
                   </Button>
-                </Item>
+                </Form.Item>
               </>
             );
           }}
         </List>
+
         <div>Description</div>
         <Item name="desc">
           <Input.TextArea />
@@ -245,9 +348,13 @@ const AddProductForm = () => {
           name="images"
           valuePropName="fileList"
           getValueFromEvent={normFile}
-          noStyle
         >
-          <Upload.Dragger name="files" action="/upload.do">
+          <Upload.Dragger
+            name="files"
+            multiple
+            customRequest={dummyRequest}
+            onChange={handleImageChange}
+          >
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>
@@ -259,14 +366,20 @@ const AddProductForm = () => {
             </p>
           </Upload.Dragger>
         </Item>
-        <div>Related Product</div>
-        <Item>
+        <div>Related Products</div>
+        <Item name="relatedProduct">
           <Select
             mode="multiple"
             labelInValue
             value={value}
             placeholder="Search and select related products"
-            notFoundContent={loading ? <Spin size="small" /> : null}
+            notFoundContent={
+              loading ? (
+                <Spin
+                  indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+                />
+              ) : null
+            }
             filterOption={false}
             onSearch={fetchRelatedProduct}
             onChange={handleRelatedInput}
@@ -277,10 +390,15 @@ const AddProductForm = () => {
           </Select>
         </Item>
         <div>Categories</div>
-        <Item>
+        <Item name="categories">
           <Select mode="tags" placeholder="Categories" onChange={handleChange}>
             {children}
           </Select>
+        </Item>
+        <Item>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
         </Item>
       </Form>
     </>

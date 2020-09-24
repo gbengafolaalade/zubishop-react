@@ -116,13 +116,13 @@ const AppNavigator = (props) => {
             path="/product/:id"
             component={() => <Product {...props} />}
           />
-          <Route exact path="/accounts/orders" component={Accounts} />
-          <Route exact path="/shop/admin" component={AdminLogin} />
           <Route
             exact
-            path="/shop/admin/dashboard"
-            component={AdminDashboard}
+            path="/accounts/orders"
+            component={oldToken ? Accounts : HomePage}
           />
+          <Route exact path="/shop/admin" component={AdminLogin} />
+          <Route path="/shop/admin/dashboard" component={AdminDashboard} />
         </Switch>
       </Router>
     </>
