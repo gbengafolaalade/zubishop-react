@@ -7,7 +7,7 @@
 const BASE_API = "http://localhost:5000";
 
 // post/put function
-export const Connect = async (path, method, data, token) => {
+export const Connect = async (path, method, data, token = null) => {
   const response = await fetch(`${BASE_API}/${path}`, {
     method,
     cors: "cors",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Form,
   Input,
@@ -12,6 +12,8 @@ import {
   Select,
   Spin,
   Card,
+  message,
+  notification,
 } from "antd";
 import {
   MinusCircleOutlined,
@@ -20,6 +22,7 @@ import {
   LoadingOutlined,
 } from "@ant-design/icons";
 import useFileUpload from "../../services/upload.hook";
+import { ProductContext } from "../../services/context/product.context";
 
 // const layout = {
 //   labelCol: {
@@ -94,15 +97,16 @@ const AddProductForm = () => {
   const [visible, setVisible] = useState(false);
   const [relatedInputState, setInputState] = useState({
     data: [],
-    loading: false,
+    fetching: false,
     value: [],
   });
   const [nameProduct, setProduct] = useState("");
   const [advPrice, setAdvPrice] = useState(null);
   const { onUploadChange, filesUrl } = useFileUpload();
-  // TODO: delete or change it this variable
-  // it is just for test purpose
-  let lastFetchId = 0;
+  const { addProduct, getProducts, error, loading, products } = useContext(
+    ProductContext
+  );
+
   const { Item, List } = Form;
   const { Option } = Select;
 
@@ -133,26 +137,21 @@ const AddProductForm = () => {
 
   const fetchRelatedProduct = (value) => {
     console.log("fetching data", value);
-    lastFetchId += 1;
-    const fetchId = lastFetchId;
-    setInputState({ ...relatedInputState, data: [], loading: true });
-    fetch("https://randomuser.me/api/?results=5")
-      .then((res) => res.json())
-      .then((response) => {
-        if (fetchId !== lastFetchId) {
-          // for fetch callback order
-          return;
-        }
-        const data = response.results.map((user) => ({
-          text: `${user.name.first} ${user.name.last}`,
-          value: user.login.username,
+
+    setInputState({ ...relatedInputState, data: [], fetching: true });
+    getProducts().then((response) => {
+      if (response) {
+        const data = products.map((product) => ({
+          text: `${product.name}`,
+          value: product._id,
         }));
-        setInputState({ ...relatedInputState, data, loading: false });
-      });
+        setInputState({ ...relatedInputState, data, fetching: false });
+      }
+    });
   };
 
   const handleRelatedInput = (value) => {
-    setInputState({ ...relatedInputState, value, data: [], loading: false });
+    setInputState({ ...relatedInputState, value, data: [], fetching: false });
   };
 
   const children = [];
@@ -172,13 +171,52 @@ const AddProductForm = () => {
     }, 0);
   };
 
-  const onSubmit = (values) => {
+  const onSubmit = async (values) => {
+    if (loading) message.loading("Creating product");
     values.images = filesUrl;
     if (advPrice) values.advPrice = advPrice;
     console.log("Success:", values);
+    const {
+      productName,
+      productPrice,
+      productVariation,
+      images,
+      desc,
+      relatedProduct,
+      categories,
+      tag,
+    } = values;
+    const data = {
+      name: productName,
+      images,
+      categories,
+      tag,
+      details: {
+        price: productPrice,
+        advPrice,
+        desc,
+        variation: productVariation,
+        relatedProduct,
+      },
+    };
+    try {
+      const res = await addProduct(data);
+      if (res) message.info("Product successfully created", 2.5);
+      if (error) {
+        notification.error({
+          message: "Error occurred",
+          description: error,
+        });
+      }
+    } catch (error) {
+      notification.error({
+        message: "Error occurred",
+        description: error,
+      });
+    }
   };
 
-  const { loading, data, value } = relatedInputState;
+  const { fetching, data, value } = relatedInputState;
 
   return (
     <>
@@ -374,7 +412,7 @@ const AddProductForm = () => {
             value={value}
             placeholder="Search and select related products"
             notFoundContent={
-              loading ? (
+              fetching ? (
                 <Spin
                   indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
                 />
@@ -394,6 +432,10 @@ const AddProductForm = () => {
           <Select mode="tags" placeholder="Categories" onChange={handleChange}>
             {children}
           </Select>
+        </Item>
+        <div>Tag</div>
+        <Item name="tag">
+          <Input />
         </Item>
         <Item>
           <Button type="primary" htmlType="submit">

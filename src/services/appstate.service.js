@@ -3,7 +3,6 @@ import AppReducer from "./appreducer.service";
 
 // initial state
 const initialState = {
-  products: [],
   user: {},
   guestCart: [],
   loading: true,
@@ -28,7 +27,6 @@ export const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider
       value={{
-        products: state.products,
         user: state.user,
         guestCart: state.guestCart,
         loading: state.loading,

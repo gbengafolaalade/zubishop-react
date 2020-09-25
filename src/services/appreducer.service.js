@@ -5,9 +5,23 @@ export default (state, action) => {
         ...state,
         user: action.payload,
       };
-    case "":
-      return {};
-
+    case "ADD_PRODUCT":
+      return {
+        ...state,
+        loading: false,
+        products: [action.payload, ...state.products],
+      };
+    case "GET_PRODUCTS":
+      return {
+        ...state,
+        loading: false,
+        products: action.payload,
+      };
+    case "ERROR":
+      return {
+        ...state,
+        error: action.payload,
+      };
     default:
       break;
   }
