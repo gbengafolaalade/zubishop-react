@@ -1,4 +1,5 @@
 import React from "react";
+// import {useParams} from 'react-router-dom'
 import SizeComponent from "./size.component";
 
 const ProductDetails = () => {

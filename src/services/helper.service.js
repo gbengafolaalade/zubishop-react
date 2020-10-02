@@ -33,3 +33,8 @@ export const TokenGeneration = (strLen) => {
     return false;
   }
 };
+
+// capitalize initial letter
+export const capitalizeFirstLetter = (string) => {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};

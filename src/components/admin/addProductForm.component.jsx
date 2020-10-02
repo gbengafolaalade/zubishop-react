@@ -1,4 +1,6 @@
-import React, { useState, useContext } from "react";
+/* eslint-disable jsx-a11y/anchor-is-valid */
+import React, { useState, useContext, useEffect, useRef } from "react";
+import { useHistory } from "react-router-dom";
 import {
   Form,
   Input,
@@ -14,6 +16,7 @@ import {
   Card,
   message,
   notification,
+  Divider,
 } from "antd";
 import {
   MinusCircleOutlined,
@@ -100,15 +103,41 @@ const AddProductForm = () => {
     fetching: false,
     value: [],
   });
+  const [categoryState, updateCategory] = useState({
+    items: [],
+    name: "",
+  });
   const [nameProduct, setProduct] = useState("");
   const [advPrice, setAdvPrice] = useState(null);
   const { onUploadChange, filesUrl } = useFileUpload();
-  const { addProduct, getProducts, error, loading, products } = useContext(
-    ProductContext
-  );
+  const {
+    addProduct,
+    getProducts,
+
+    loading,
+    products,
+    categories,
+    addCategory,
+    getCategories,
+  } = useContext(ProductContext);
+  const initialValue = useRef({
+    getCategories,
+    categoryState,
+    categories,
+  });
 
   const { Item, List } = Form;
   const { Option } = Select;
+  let index = 0;
+  let history = useHistory();
+
+  useEffect(() => {
+    const { getCategories } = initialValue.current;
+    getCategories();
+  }, [categoryState.name]);
+
+  console.log("this is the category::", categories);
+  console.log("this is the items::", categoryState.items);
 
   const onCreate = (values) => {
     console.log("Received values of form: ", values);
@@ -161,8 +190,27 @@ const AddProductForm = () => {
     );
   }
 
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
+  // const handleChange = (value) => {
+  //   console.log(`selected ${value}`);
+  // };
+
+  const onNameChange = (event) => {
+    updateCategory({
+      ...categoryState,
+      name: event.target.value,
+    });
+  };
+
+  const addItem = async () => {
+    console.log("addItem");
+    const { items, name } = categoryState;
+    await addCategory({ name });
+
+    updateCategory({
+      ...categoryState,
+      items: [...items, name || `New item ${index++}`],
+      name: "",
+    });
   };
 
   const dummyRequest = ({ file, onSuccess }) => {
@@ -200,14 +248,10 @@ const AddProductForm = () => {
       },
     };
     try {
-      const res = await addProduct(data);
-      if (res) message.info("Product successfully created", 2.5);
-      if (error) {
-        notification.error({
-          message: "Error occurred",
-          description: error,
-        });
-      }
+      await addProduct(data);
+      message.info("Product successfully created", 2.5);
+      values = null;
+      history.push("/shop/admin/dashboard/products");
     } catch (error) {
       notification.error({
         message: "Error occurred",
@@ -217,6 +261,7 @@ const AddProductForm = () => {
   };
 
   const { fetching, data, value } = relatedInputState;
+  const { items, name } = categoryState;
 
   return (
     <>
@@ -429,8 +474,45 @@ const AddProductForm = () => {
         </Item>
         <div>Categories</div>
         <Item name="categories">
-          <Select mode="tags" placeholder="Categories" onChange={handleChange}>
-            {children}
+          <Select
+            mode="multiple"
+            placeholder="Select category"
+            onDropdownVisibleChange={() =>
+              updateCategory({
+                ...categoryState,
+                items: categories,
+              })
+            }
+            dropdownRender={(menu) => (
+              <div>
+                {menu}
+                <Divider style={{ margin: "4px 0" }} />
+                <div
+                  style={{ display: "flex", flexWrap: "nowrap", padding: 8 }}
+                >
+                  <Input
+                    style={{ flex: "auto" }}
+                    value={name}
+                    onChange={onNameChange}
+                  />
+                  <a
+                    style={{
+                      flex: "none",
+                      padding: "8px",
+                      display: "block",
+                      cursor: "pointer",
+                    }}
+                    onClick={addItem}
+                  >
+                    <PlusOutlined /> Add category
+                  </a>
+                </div>
+              </div>
+            )}
+          >
+            {items.map((item) => (
+              <Option key={item}>{item}</Option>
+            ))}
           </Select>
         </Item>
         <div>Tag</div>

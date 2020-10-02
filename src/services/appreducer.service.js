@@ -17,9 +17,22 @@ export default (state, action) => {
         loading: false,
         products: action.payload,
       };
+    case "GET_CATEGORIES":
+      return {
+        ...state,
+        loading: false,
+        categories: action.payload,
+      };
+    case "ADD_CATEGORY":
+      return {
+        ...state,
+        loading: false,
+        categories: [...state.categories, action.payload],
+      };
     case "ERROR":
       return {
         ...state,
+        loading: false,
         error: action.payload,
       };
     default:

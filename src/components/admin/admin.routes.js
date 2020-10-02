@@ -11,6 +11,7 @@ import Products from "./products.component";
 import Orders from "./order.component";
 import Posts from "./post.component";
 import Users from "./users.component";
+import SingleProduct from "./product.component";
 
 const AdminRoutes = [
   //  @TODO: Create route for the admin dashboard
@@ -36,6 +37,12 @@ const AdminRoutes = [
     name: () => <>Add Product</>,
   },
   {
+    main: SingleProduct,
+    path: "/shop/admin/dashboard/products/:id",
+    name: () => <>Product</>,
+  },
+  {
+    exact: true,
     main: Products,
     path: "/shop/admin/dashboard/products",
     name: () => <>Products</>,
